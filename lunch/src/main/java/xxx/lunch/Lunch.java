@@ -1,8 +1,11 @@
 package xxx.lunch;
 
 public class Lunch {
-    public final String name;
+    public String name;
     private boolean checked;
+
+    public Lunch() {
+    }
 
     public Lunch(String name) {
         this.name = name;
@@ -23,6 +26,9 @@ public class Lunch {
 
     @Override
     public String toString() {
-        return name;
+        return "Lunch{" +
+            "name='" + name + '\'' +
+            ", checked=" + checked +
+            '}';
     }
 }

@@ -3,17 +3,20 @@ package xxx.lunch;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.*;
 
+import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private List<Lunch> lunches = new ArrayList<Lunch>();
+    private final List<Lunch> lunches = new ArrayList<Lunch>();
     private ListView listView;
     private LunchAdapter arrayAdapter;
 
@@ -23,16 +26,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         arrayAdapter = new LunchAdapter(this, lunches);
 
-        lunches.add(new Lunch("正宗排骨"));
-        lunches.add(new Lunch("湘園"));
-        lunches.add(new Lunch("林媽雞排"));
-        lunches.add(new Lunch("九色鹽酥雞"));
-        lunches.add(new Lunch("愛買"));
-        lunches.add(new Lunch("吳記水餃"));
-        lunches.add(new Lunch("丹丹"));
-        lunches.add(new Lunch("流氓炒飯"));
-        lunches.add(new Lunch("米羅大飯店"));
-        lunches.add(new Lunch("阿雪炒飯"));
+        loadLunches();
 
         final EditText text = (EditText) findViewById(R.id.input);
         listView = (ListView) findViewById(R.id.list_view);
@@ -61,11 +55,46 @@ public class MainActivity extends Activity {
                     arrayAdapter.notifyDataSetChanged();
                     System.out.println(lunches);
                     text.getText().clear();
+                    saveLunches();
                 }
 
                 return false;
             }
         });
+
+
+        // init checked state
+        for (int i = 0; i < lunches.size(); i++) {
+            Lunch lunch = lunches.get(i);
+            listView.setItemChecked(i, lunch.isChecked());
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        saveLunches();
+        super.onStop();
+    }
+
+    void loadLunches() {
+        try {
+            FileInputStream in = openFileInput("lunches_v1.csv");
+            InputStreamReader reader = new InputStreamReader(in, Charset.forName("UTF-8"));
+            List<Lunch> lunchesPersist = Csv.parse(reader, Lunch.class);
+            lunches.addAll(lunchesPersist);
+        } catch (Throwable e) {
+            Log.e("lunch", "loadLunches", e);
+        }
+    }
+
+    void saveLunches() {
+        try {
+            FileOutputStream out = openFileOutput("lunches_v1.csv", MODE_PRIVATE);
+            Csv.writeTo(lunches, Lunch.class, out);
+        } catch (FileNotFoundException ignored) {
+        } catch (Throwable e) {
+            Log.e("lunch", "saveLunches", e);
+        }
     }
 
     public void gotoTreasureChest(View view) {
