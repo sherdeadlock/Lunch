@@ -36,6 +36,7 @@ public class Csv {
             OutputStreamWriter writer = new OutputStreamWriter(out, Charset.forName("UTF-8"));
             CSV.writer(schema).writeValues(writer).writeAll(lst);
             writer.close();
+            out.close();
         } catch (JsonProcessingException e) {
             throw new CsvException(e);
         } catch (IOException e) {
