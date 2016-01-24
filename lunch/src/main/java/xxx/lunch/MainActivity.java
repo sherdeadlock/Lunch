@@ -62,6 +62,27 @@ public class MainActivity extends Activity {
             }
         });
 
+        SwipeDismissListViewTouchListener touchListener =
+            new SwipeDismissListViewTouchListener(
+                listView,
+                new SwipeDismissListViewTouchListener.DismissCallbacks() {
+                    @Override
+                    public boolean canDismiss(int position) {
+                        return true;
+                    }
+
+                    @Override
+                    public void onDismiss(ListView listView, int[] reverseSortedPositions) {
+                        for (int position : reverseSortedPositions) {
+                            arrayAdapter.remove(arrayAdapter.getItem(position));
+                        }
+                        arrayAdapter.notifyDataSetChanged();
+                    }
+                });
+        listView.setOnTouchListener(touchListener);
+        // Setting this scroll listener is required to ensure that during ListView scrolling,
+        // we don't look for swipes.
+        listView.setOnScrollListener(touchListener.makeScrollListener());
 
         // init checked state
         for (int i = 0; i < lunches.size(); i++) {
@@ -82,6 +103,7 @@ public class MainActivity extends Activity {
             InputStreamReader reader = new InputStreamReader(in, Charset.forName("UTF-8"));
             List<Lunch> lunchesPersist = Csv.parse(reader, Lunch.class);
             lunches.addAll(lunchesPersist);
+        } catch (FileNotFoundException ignored) {
         } catch (Throwable e) {
             Log.e("lunch", "loadLunches", e);
         }
@@ -91,7 +113,6 @@ public class MainActivity extends Activity {
         try {
             FileOutputStream out = openFileOutput("lunches_v1.csv", MODE_PRIVATE);
             Csv.writeTo(lunches, Lunch.class, out);
-        } catch (FileNotFoundException ignored) {
         } catch (Throwable e) {
             Log.e("lunch", "saveLunches", e);
         }
